@@ -11,6 +11,11 @@ library(shiny)
 library(shinythemes)
 library(reticulate)
 
+use_virtualenv("./renv/python/virtualenvs/renv-python-3.10")
+
+source_python("SmilesFunctions.py")
+
+
 con_modelo_ac = gzfile("./ac/modelo_ac.rds")
 modelo_ac <- readRDS(con_modelo_ac)
 con_modelo_ad = gzfile("./ad/modelo_ad.rds")
