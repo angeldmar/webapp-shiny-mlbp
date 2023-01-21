@@ -13,8 +13,7 @@ library(reticulate)
 
 use_virtualenv("./renv/python/virtualenvs/renv-python-3.10")
 
-source_python("SmilesFunctions.py")
-
+source_python("utils/SmilesFunctions.py")
 
 con_modelo_ac = gzfile("./ac/modelo_ac.rds")
 modelo_ac <- readRDS(con_modelo_ac)
@@ -50,21 +49,69 @@ con_trained_recipe_ao = gzfile("./ao/trained_recipe_ao.rds")
 trained_recipe_ao <- readRDS(con_trained_recipe_ao)
 
 
-# Define UI for application that draws a histogram
-ui <- fluidPage(
-  
-    # Application title
-    titlePanel("Prediccion de bioactividades"),
-    theme = shinytheme("slate"),
-    fluidRow(column(width = 4), 
-             column(width = 2, offset = 3)),
-    textInput("user_smiles", "Introduce tu codigo Smiles"),
-    fluidRow(column(width = 12))
+ui <- navbarPage(
 
+  theme = shinytheme("slate"),
+  "Nombre de pagina",
+  tabPanel("Predicciones de bioactividades",
+    fluidPage(
+      fluidRow(
+        sidebarLayout(
+          sidebarPanel(
+            textInput("user_smiles", "Introduce tu codigo Smiles"),
+            actionButton("prediction_button", "Calcular predicciones", class = "btn-block btn-lg")
+          ),
+          mainPanel(
+            tableOutput("prediction_output")
+          )
+        )
+      ),
+      fluidRow(
+        column(2,
+          ),
+        column(8,
+          imageOutput("smiles_image")
+        ),
+        column(2,
+          )
+      ),
     )
+  ),
+  navbarMenu("Acerca de la pagina",
+    tabPanel("Funcionamiento", "Bla bla"),
+    tabPanel("Documentos", "Articulo cientifico sin publicar, pagina de tesis"),
+    tabPanel("Precision de modelos", "lorem ipsum")
+  ),
+    tabPanel("Acerca de los autores", "loren ipsum")
+)
+  
+  
 
-# Define server logic required to draw a histogram
-server <- function(input, output) {
+
+server <- function(input, output, session) {
+
+   # hay que agregar algo al render  
+   # output$prediction_output <- renderTable()
+   
+   
+   
+   output$smiles_image <- renderImage({
+     
+    # drawing_smiles(input$user_smiles)
+     
+     width  <- session$clientData$output_smiles_image_width
+     
+     list(
+       #ver si funciona en python enviarlo a al folder img
+       src = "./img/2D_smiles.png",
+       contentType = "image/png",
+       alt = "Imagen de molecula",
+       width = width
+     )
+     
+   }, 
+   deleteFile = F
+   )
    
 }
 

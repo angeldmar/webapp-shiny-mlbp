@@ -5,6 +5,8 @@ from rdkit.Chem import Descriptors
 from rdkit.Chem import rdMolDescriptors
 from rdkit.Chem import Lipinski
 from rdkit.Chem import Draw
+from rdkit.Chem.Draw import rdMolDraw2D
+from cairosvg import svg2png
 import pandas as pd
 
 
@@ -220,13 +222,19 @@ def calculating_lipinski_dataframe(string_smiles):
 def drawing_smiles(string_smiles):
     m = Chem.MolFromSmiles(string_smiles)
     AllChem.Compute2DCoords(m)
-    Draw.MolToFile(m, "2D_smiles.o.png", size=(1280,720))
-
+    dr = rdMolDraw2D.MolDraw2DSVG(1080, 1080)
+    opts = dr.drawOptions()
+    opts.clearBackground=False
+    dr.DrawMolecule(m)
+    dr.FinishDrawing()
+    svg_text = dr.GetDrawingText()
+    svg2png(bytestring=svg_text, write_to="../img/2D_smiles.png")
 
 #  Entry point Solo debe usarse en test, de lo contrario generara errores en reticulate
 
 
-if __name__ == "__main__":
+# if __name__ == "__main__":
+
     # smiles_de_prueba = input("Introduce tu smiles:")
     # descriptor3d_de_prueba = calculating_descriptors3d(smiles_de_prueba)
     # descriptor3d_de_prueba_transformado = descriptor3d_data_transformation(descriptor3d_de_prueba)
@@ -238,4 +246,4 @@ if __name__ == "__main__":
     # print(descriptor2d_de_prueba)
     # print(descriptor2d_de_prueba_transformado)
     # print(descriptores_lipinski)
-    drawing_smiles("CCC[C@@H](O)CC\C=C\C=C\C#CC#C\C=C\CO")
+    # drawing_smiles("CCC[C@@H](O)CC\C=C\C=C\C#CC#C\C=C\CO")
