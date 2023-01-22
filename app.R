@@ -89,18 +89,21 @@ ui <- navbarPage(
 
 
 server <- function(input, output, session) {
-
-   # hay que agregar algo al render  
-   # output$prediction_output <- renderTable()
+  
+  # hay que agregar algo al render  
+  # output$prediction_output <- renderTable()
    
    
+  
+  generate_image <- eventReactive(input$prediction_button, {
+    drawing_image(input$user_smiles)
+       
+    })
    
    output$smiles_image <- renderImage({
      
-    # drawing_smiles(input$user_smiles)
-     
+     generate_image()
      width  <- session$clientData$output_smiles_image_width
-     
      list(
        #ver si funciona en python enviarlo a al folder img
        src = "./img/2D_smiles.png",
