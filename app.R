@@ -73,7 +73,7 @@ ui <- navbarPage(
           imageOutput("smiles_image")
         ),
         column(2,
-          )
+        )
       ),
     )
   ),
@@ -82,40 +82,71 @@ ui <- navbarPage(
     tabPanel("Documentos", "Articulo cientifico sin publicar, pagina de tesis"),
     tabPanel("Precision de modelos", "lorem ipsum")
   ),
-    tabPanel("Acerca de los autores", "loren ipsum")
+  tabPanel("Acerca de los autores", "loren ipsum")
 )
   
   
 
 
 server <- function(input, output, session) {
-  
+
+  descriptors <- eventReactive(input$prediction_button, {
+    # input$user_smiles  hay que tratarlo
+    # Hay que poner la generacion de descriptores de python
+  })
+
+  ac_prediction <- reactive(
+    # hago el codigo de las predicciones que debe depender de descriptors()
+  )
+
+  ad_prediction <- reactive(
+    # hago el codigo de las predicciones que debe depender de descriptors()
+  )
+
+  ai_prediction <- reactive(
+    # hago el codigo de las predicciones que debe depender de descriptors()
+  )
+
+  am_prediction <- reactive(
+    # hago el codigo de las predicciones que debe depender de descriptors()
+  )
+
+  ao_prediction <- reactive(
+    # hago el codigo de las predicciones que debe depender de descriptors()
+  )
+
   # hay que agregar algo al render  
-  # output$prediction_output <- renderTable()
-   
-   
-  
+  output$prediction_output <- renderTable(
+    # hago tabla las predicciones
+    # ac_prediction()
+  )
+
+
+
+
+
+
+
   generate_image <- eventReactive(input$prediction_button, {
-    drawing_image(input$user_smiles)
+    SmilesFunctions.drawing_image(input$user_smiles)
        
-    })
+    }
+  )
    
-   output$smiles_image <- renderImage({
+  output$smiles_image <- renderImage({
      
-     generate_image()
-     width  <- session$clientData$output_smiles_image_width
-     list(
-       #ver si funciona en python enviarlo a al folder img
-       src = "./img/2D_smiles.png",
-       contentType = "image/png",
-       alt = "Imagen de molecula",
-       width = width
-     )
-     
-   }, 
-   deleteFile = F
-   )
-   
+    generate_image()
+      width  <- session$clientData$output_smiles_image_width
+      list(
+        #ver si funciona en python enviarlo a al folder img
+        src = "./img/2D_smiles.png",
+        contentType = "image/png",
+        alt = "Imagen de molecula",
+        width = width
+      )     
+    }, 
+    deleteFile = F
+  ) 
 }
 
 # Run the application 
