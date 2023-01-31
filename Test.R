@@ -1,12 +1,13 @@
-library(shiny)
-library(shinythemes)
+# library(dplyr)
 library(reticulate)
-library(caret)
+#library(RSNNS)
 library(recipes)
-library(RSNNS)
+library(caret)
 library(RRF)
 
 use_virtualenv("./renv/python/virtualenvs/renv-python-3.11")
+
+# source_python("utils/SmilesFunctions.py")
 
 smilesf <- import("utils.SmilesFunctions")
 
@@ -46,8 +47,9 @@ trained_recipe_ao <- readRDS(con_trained_recipe_ao)
 
 generating_descriptors <- function(molecule) {
   # Hay que hacer una funcion de cleaning_input
-  descriptors2d <- smilesf$calculating_descriptors2d(molecule)
-  descriptors3d <- smilesf$calculating_descriptors3d(molecule)
+  descriptors2d <- smilesf$generating_descriptors2d_dataframe(molecule)
+  descriptors3d <- smilesf$generating_descriptors3d_dataframe(molecule)
+  descriptors3d <- smilesf$descriptors3d_data_transformation(descriptors3d)
   lipinski_descriptors <- smilesf$calculating_lipinski_descriptors(molecule)
   descriptors_dataframe <- merge(descriptors2d, 
                                  descriptors3d, 
@@ -67,91 +69,34 @@ generating_descriptors <- function(molecule) {
   return(descriptors_dataframe)
 }
 
+
+# experimentando funcion
 bioactivity_prediction <- function(descriptors_dataframe, filter_values, preprocess_recipe, prediction_model, prediction_type) {
   
-  descriptors_dataframe <- descriptors_dataframe[, filter_values] 
-  descriptors_dataframe <- bake(preprocess_recipe, new_data = descriptors_dataframe)
+  descriptors_dataframe <- descriptors_dataframe[filter_values, ] 
+  #descriptors_dataframe <- bake(preprocess_recipe, new_data = descriptors_dataframe)
   prediction <- predict(prediction_model, new_data = descriptors_dataframe, type = prediction_type)
   
   return(prediction)
 }
 
-ui <- navbarPage(
 
-  theme = shinytheme("slate"),
-  "Nombre de pagina",
-  tabPanel("Predicciones de bioactividades",
-    fluidPage(
-      fluidRow(
-        sidebarLayout(
-          sidebarPanel(
-            textInput("user_smiles", "Introduce tu codigo Smiles"),
-            actionButton("prediction_button", "Calcular predicciones", class = "btn-block btn-lg")
-          ),
-          mainPanel(
-            tableOutput("prediction_table")
-          )
-        )
-      ),
-      fluidRow(
-        column(2,
-          ),
-        column(8,
-          imageOutput("smiles_image")
-        ),
-        column(2,
-        )
-      ),
-    )
-  ),
-  navbarMenu("Acerca de la pagina",
-    tabPanel("Funcionamiento", "Bla bla"),
-    tabPanel("Documentos", "Articulo cientifico sin publicar, pagina de tesis"),
-    tabPanel("Precision de modelos", "lorem ipsum")
-  ),
-  tabPanel("Acerca de los autores", "loren ipsum")
-)
-  
-  
+#lo cambie pero es  molecula_test
+
+molecule <- "CN=C=O"
 
 
-server <- function(input, output, session) {
+descriptors <- generating_descriptors(molecula_test)
 
-  descriptors <- eventReactive(input$prediction_button, {
-       dataframe <- generating_descriptors(input$user_smiles)
-  })
-  
-  creating_table <- function(descriptors) {
-    ac_prediction <- bioactivity_prediction(descriptors, predictores_filtrados_ac, trained_recipe_ac, modelo_ac, "class")
-    ad_prediction <- bioactivity_prediction(descriptors, predictores_filtrados_ad, trained_recipe_ad, modelo_ad, "class")
-    ai_prediction <- bioactivity_prediction(descriptors, predictores_filtrados_ai, trained_recipe_ai, modelo_ai, "class")
-    am_prediction <- bioactivity_prediction(descriptors, predictores_filtrados_am, trained_recipe_am, modelo_am, "class")
-    ao_prediction <- bioactivity_prediction(descriptors, predictores_filtrados_ao, trained_recipe_ao, modelo_ao, "class")
-  }
-    
-  output$prediction_table <- renderTable(creating_table())
-  
-  generate_image <- eventReactive(input$prediction_button, {
-    smilesf$drawing_smiles(input$user_smiles)
+ac_prediction <- bioactivity_prediction(descriptors, predictores_filtrados_ac, trained_recipe_ac, modelo_ac, "raw")
+ad_prediction <- bioactivity_prediction(descriptors, predictores_filtrados_ad, trained_recipe_ad, modelo_ad, "")
+ai_prediction <- bioactivity_prediction(descriptors, predictores_filtrados_ai, trained_recipe_ai, modelo_ai, "class")
+am_prediction <- bioactivity_prediction(descriptors, predictores_filtrados_am, trained_recipe_am, modelo_am, "class")
+ao_prediction <- bioactivity_prediction(descriptors, predictores_filtrados_ao, trained_recipe_ao, modelo_ao, "class")
 
-    }
-  )
-   
-  output$smiles_image <- renderImage({
-      
-      generate_image()
-      width  <- session$clientData$output_smiles_image_width
-      list(
-        #ver si funciona en python enviarlo a al folder img
-        src = "./img/2D_smiles.png",
-        contentType = "image/png",
-        alt = "Imagen de molecula",
-        width = width
-      )     
-    }, 
-    deleteFile = T
-  ) 
-}
 
-# Run the application 
-shinyApp(ui = ui, server = server)
+ac_prediction <- bioactivity_prediction(descriptors, predictores_filtrados_ac, trained_recipe_ac, modelo_ac, "prob")
+ad_prediction <- bioactivity_prediction(descriptors, predictores_filtrados_ad, trained_recipe_ad, modelo_ad, "class")
+ai_prediction <- bioactivity_prediction(descriptors, predictores_filtrados_ai, trained_recipe_ai, modelo_ai, "class")
+am_prediction <- bioactivity_prediction(descriptors, predictores_filtrados_am, trained_recipe_am, modelo_am, "class")
+ao_prediction <- bioactivity_prediction(descriptors, predictores_filtrados_ao, trained_recipe_ao, modelo_ao, "class")

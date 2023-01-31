@@ -4,7 +4,6 @@ from rdkit.Chem import Descriptors3D
 from rdkit.Chem import Descriptors
 from rdkit.Chem import rdMolDescriptors
 from rdkit.Chem import Lipinski
-from rdkit.Chem import Draw
 from rdkit.Chem.Draw import rdMolDraw2D
 from cairosvg import svg2png
 import pandas as pd
@@ -29,7 +28,8 @@ def dictionary_to_dataframe(dictionary_smiles):
 
     return smiles_dataframe
 
-def descriptor3d_data_transformation(descriptors3d_raw):
+
+def descriptors3d_data_transformation(descriptors3d_raw):
 
     descriptors3d_dataframe = dictionary_to_dataframe(descriptors3d_raw)
     final_descriptors3d_dataframe = descriptor_string_partitioner(descriptors3d_dataframe, 'CalcAUTOCORR3D')
@@ -40,7 +40,8 @@ def descriptor3d_data_transformation(descriptors3d_raw):
 
     return final_descriptors3d_dataframe
 
-def descriptor2d_data_transformation(descriptors2d_raw):
+
+def descriptors2d_data_transformation(descriptors2d_raw):
 
     descriptors2d_dataframe = dictionary_to_dataframe(descriptors2d_raw)
     final_descriptors2d_dataframe = descriptor_string_partitioner(descriptors2d_dataframe, 'MQNs_')
@@ -74,7 +75,25 @@ def calculating_descriptors3d(string_smiles):
     descriptors3d_dictionary['RadiusOfGyration'] = Descriptors3D.RadiusOfGyration(m2)
     descriptors3d_dictionary['SpherocityIndex'] = Descriptors3D.SpherocityIndex(m2)
 
-    return descriptors3d_dictionary
+    descriptors3d_dataframe = dictionary_to_dataframe(descriptors3d_dictionary)
+
+    return descriptors3d_dataframe
+
+
+def generating_descriptors3d_dataframe(user_input):
+    
+    descriptors3d_raw = calculating_descriptors3d(user_input)
+    descriptors3d_dataframe = descriptors3d_data_transformation(descriptors3d_raw)
+    
+    return descriptors3d_dataframe
+
+
+def generating_descriptors2d_dataframe(user_input):
+    
+    descriptors2d_raw = calculating_descriptors3d(user_input)
+    descriptors2d_dataframe = descriptors2d_data_transformation(descriptors2d_raw)
+    
+    return descriptors2d_dataframe
 
 
 def calculating_descriptors2d(string_smiles):
@@ -191,9 +210,12 @@ def calculating_descriptors2d(string_smiles):
     descriptors2d_dictionary['MQNs_'] = rdMolDescriptors.MQNs_(m)
     descriptors2d_dictionary['CalcAUTOCORR2D'] = rdMolDescriptors.CalcAUTOCORR2D(m)
 
-    return descriptors2d_dictionary
+    descriptors2d_dataframe = dictionary_to_dataframe(descriptors2d_dictionary)
 
-def calculating_lipinski_dataframe(string_smiles):
+    return descriptors2d_dataframe
+
+
+def calculating_lipinski_descriptors(string_smiles):
 
     lipinski_dictionary = {}
     m = Chem.MolFromSmiles(string_smiles)
@@ -224,11 +246,11 @@ def drawing_smiles(string_smiles):
     AllChem.Compute2DCoords(m)
     dr = rdMolDraw2D.MolDraw2DSVG(1080, 1080)
     opts = dr.drawOptions()
-    opts.clearBackground=False
+    opts.clearBackground = False
     dr.DrawMolecule(m)
     dr.FinishDrawing()
     svg_text = dr.GetDrawingText()
-    svg2png(bytestring=svg_text, write_to="../img/2D_smiles.png")
+    svg2png(bytestring=svg_text, write_to="./img/2D_smiles.png")
 
 #  Entry point Solo debe usarse en test, de lo contrario generara errores en reticulate
 
