@@ -29,9 +29,9 @@ def dictionary_to_dataframe(dictionary_smiles):
     return smiles_dataframe
 
 
-def descriptors3d_data_transformation(descriptors3d_raw):
+def descriptors3d_data_transformation(descriptors3d_raw_dict):
 
-    descriptors3d_dataframe = dictionary_to_dataframe(descriptors3d_raw)
+    descriptors3d_dataframe = dictionary_to_dataframe(descriptors3d_raw_dict)
     final_descriptors3d_dataframe = descriptor_string_partitioner(descriptors3d_dataframe, 'CalcAUTOCORR3D')
     final_descriptors3d_dataframe = descriptor_string_partitioner(final_descriptors3d_dataframe, 'CalcRDF')
     final_descriptors3d_dataframe = descriptor_string_partitioner(final_descriptors3d_dataframe, 'CalcMORSE')
@@ -41,10 +41,10 @@ def descriptors3d_data_transformation(descriptors3d_raw):
     return final_descriptors3d_dataframe
 
 
-def descriptors2d_data_transformation(descriptors2d_raw):
+def descriptors2d_data_transformation(descriptors2d_raw_dict):
 
-    descriptors2d_dataframe = dictionary_to_dataframe(descriptors2d_raw)
-    final_descriptors2d_dataframe = descriptor_string_partitioner(descriptors2d_dataframe, 'MQNs_')
+    descriptors2d_dataframe = dictionary_to_dataframe(descriptors2d_raw_dict)
+    final_descriptors2d_dataframe = descriptor_string_partitioner(descriptors2d_dataframe, 'MQNs')
     final_descriptors2d_dataframe = descriptor_string_partitioner(final_descriptors2d_dataframe, 'CalcAUTOCORR2D')
 
     return final_descriptors2d_dataframe
@@ -75,25 +75,7 @@ def calculating_descriptors3d(string_smiles):
     descriptors3d_dictionary['RadiusOfGyration'] = Descriptors3D.RadiusOfGyration(m2)
     descriptors3d_dictionary['SpherocityIndex'] = Descriptors3D.SpherocityIndex(m2)
 
-    descriptors3d_dataframe = dictionary_to_dataframe(descriptors3d_dictionary)
-
-    return descriptors3d_dataframe
-
-
-def generating_descriptors3d_dataframe(user_input):
-    
-    descriptors3d_raw = calculating_descriptors3d(user_input)
-    descriptors3d_dataframe = descriptors3d_data_transformation(descriptors3d_raw)
-    
-    return descriptors3d_dataframe
-
-
-def generating_descriptors2d_dataframe(user_input):
-    
-    descriptors2d_raw = calculating_descriptors3d(user_input)
-    descriptors2d_dataframe = descriptors2d_data_transformation(descriptors2d_raw)
-    
-    return descriptors2d_dataframe
+    return descriptors3d_dictionary
 
 
 def calculating_descriptors2d(string_smiles):
@@ -207,12 +189,10 @@ def calculating_descriptors2d(string_smiles):
     descriptors2d_dictionary['CalcNumAromaticCarbocycles'] = rdMolDescriptors.CalcNumAromaticCarbocycles(m)
     descriptors2d_dictionary['CalcNumSpiroAtoms'] = rdMolDescriptors.CalcNumSpiroAtoms(m)
     descriptors2d_dictionary['CalcNumBridgeheadAtoms'] = rdMolDescriptors.CalcNumBridgeheadAtoms(m)
-    descriptors2d_dictionary['MQNs_'] = rdMolDescriptors.MQNs_(m)
+    descriptors2d_dictionary['MQNs'] = rdMolDescriptors.MQNs_(m)
     descriptors2d_dictionary['CalcAUTOCORR2D'] = rdMolDescriptors.CalcAUTOCORR2D(m)
 
-    descriptors2d_dataframe = dictionary_to_dataframe(descriptors2d_dictionary)
-
-    return descriptors2d_dataframe
+    return descriptors2d_dictionary
 
 
 def calculating_lipinski_descriptors(string_smiles):
@@ -220,28 +200,59 @@ def calculating_lipinski_descriptors(string_smiles):
     lipinski_dictionary = {}
     m = Chem.MolFromSmiles(string_smiles)
 
-    lipinski_dictionary['FractionCSP3'] = Lipinski.FractionCSP3(m)
-    lipinski_dictionary['HeavyAtomCount'] = Lipinski.HeavyAtomCount(m)
-    lipinski_dictionary['NHOHCount'] = Lipinski.NHOHCount(m)
-    lipinski_dictionary['NOCount'] = Lipinski.NOCount(m)
-    lipinski_dictionary['NumAliphaticCarbocycles'] = Lipinski.NumAliphaticCarbocycles(m)
+    lipinski_dictionary['FractionCSP3.y'] = Lipinski.FractionCSP3(m)
+    lipinski_dictionary['HeavyAtomCount.y'] = Lipinski.HeavyAtomCount(m)
+    lipinski_dictionary['NHOHCount.y'] = Lipinski.NHOHCount(m)
+    lipinski_dictionary['NOCount.y'] = Lipinski.NOCount(m)
+    lipinski_dictionary['NumAliphaticCarbocycles.y'] = Lipinski.NumAliphaticCarbocycles(m)
     lipinski_dictionary['NumAliphaticHeterocycles'] = Lipinski.NumAliphaticHeterocycles(m)
     lipinski_dictionary['NumAromaticCarbocycles'] = Lipinski.NumAromaticCarbocycles(m)
-    lipinski_dictionary['NumHAcceptors'] = Lipinski.NumHAcceptors(m)
-    lipinski_dictionary['NumHDonors'] = Lipinski.NumHDonors(m)
-    lipinski_dictionary['NumHeteroatoms'] = Lipinski.NumHeteroatoms(m)
+    lipinski_dictionary['NumHAcceptors.y'] = Lipinski.NumHAcceptors(m)
+    lipinski_dictionary['NumHDonors.y'] = Lipinski.NumHDonors(m)
+    lipinski_dictionary['NumHeteroatoms.y'] = Lipinski.NumHeteroatoms(m)
     lipinski_dictionary['NumRotatableBonds'] = Lipinski.NumRotatableBonds(m)
-    lipinski_dictionary['NumSaturatedCarbocycles'] = Lipinski.NumSaturatedCarbocycles(m)
-    lipinski_dictionary['NumSaturatedHeterocycles'] = Lipinski.NumSaturatedHeterocycles(m)
-    lipinski_dictionary['NumSaturatedRings'] = Lipinski.NumSaturatedRings(m)
-    lipinski_dictionary['RingCount'] = Lipinski.RingCount(m)
+    lipinski_dictionary['NumSaturatedCarbocycles.y'] = Lipinski.NumSaturatedCarbocycles(m)
+    lipinski_dictionary['NumSaturatedHeterocycles.y'] = Lipinski.NumSaturatedHeterocycles(m)
+    lipinski_dictionary['NumSaturatedRings.y'] = Lipinski.NumSaturatedRings(m)
+    lipinski_dictionary['RingCount.y'] = Lipinski.RingCount(m)
 
     lipinski_dataframe = dictionary_to_dataframe(lipinski_dictionary)
 
     return lipinski_dataframe
 
 
+def generating_descriptors3d_dataframe(user_input):
+    descriptors3d_raw = calculating_descriptors3d(user_input)
+    descriptors3d_dataframe = descriptors3d_data_transformation(descriptors3d_raw)
+
+    return descriptors3d_dataframe
+
+
+def generating_descriptors2d_dataframe(user_input):
+    descriptors2d_raw = calculating_descriptors2d(user_input)
+    descriptors2d_dataframe = descriptors2d_data_transformation(descriptors2d_raw)
+
+    return descriptors2d_dataframe
+
+
+def generating_descriptors(user_input):
+
+    descriptors2d_raw = calculating_descriptors2d(user_input)
+    descriptors2d_dataframe = descriptors2d_data_transformation(descriptors2d_raw)
+    descriptors3d_raw = calculating_descriptors3d(user_input)
+    descriptors3d_dataframe = descriptors3d_data_transformation(descriptors3d_raw)
+    lipinski_dataframe = calculating_lipinski_descriptors(user_input)
+    descriptors_dataframe = pd.concat([descriptors2d_dataframe, descriptors3d_dataframe], axis=1, join="inner")
+    descriptors_dataframe = pd.concat([descriptors_dataframe, lipinski_dataframe], axis=1, join="inner")
+    # La transformacion de tipos en reticulate falla si el dataframe contiene objetos no identificados,
+    # Es indispensable la conversion a float para que funcione en R
+    descriptors_dataframe = descriptors_dataframe.astype(float)
+
+    return descriptors_dataframe
+
+
 def drawing_smiles(string_smiles):
+
     m = Chem.MolFromSmiles(string_smiles)
     AllChem.Compute2DCoords(m)
     dr = rdMolDraw2D.MolDraw2DSVG(1080, 1080)
@@ -256,16 +267,8 @@ def drawing_smiles(string_smiles):
 
 
 # if __name__ == "__main__":
-
-    # smiles_de_prueba = input("Introduce tu smiles:")
-    # descriptor3d_de_prueba = calculating_descriptors3d(smiles_de_prueba)
-    # descriptor3d_de_prueba_transformado = descriptor3d_data_transformation(descriptor3d_de_prueba)
-    # descriptor2d_de_prueba = calculating_descriptors2d(smiles_de_prueba)
-    # descriptor2d_de_prueba_transformado = descriptor2d_data_transformation(descriptor2d_de_prueba)
-    # descriptores_lipinski = calculating_lipinski_dataframe(smiles_de_prueba)
-    # print(descriptor3d_de_prueba)
-    # print(descriptor3d_de_prueba_transformado)
-    # print(descriptor2d_de_prueba)
-    # print(descriptor2d_de_prueba_transformado)
-    # print(descriptores_lipinski)
-    # drawing_smiles("CCC[C@@H](O)CC\C=C\C=C\C#CC#C\C=C\CO")
+#
+#     smiles_de_prueba = input("Introduce tu smiles:")
+#     descriptors = generating_descriptors(smiles_de_prueba)
+#     print(descriptors)
+#     print(descriptors.dtypes)

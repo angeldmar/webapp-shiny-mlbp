@@ -25,6 +25,8 @@ con_predictores_filtrados_ac = gzfile("./ac/predictores_filtrados_ac.rds")
 predictores_filtrados_ac <- readRDS(con_predictores_filtrados_ac)
 con_predictores_filtrados_ad = gzfile("./ad/predictores_filtrados_ad.rds")
 predictores_filtrados_ad <- readRDS(con_predictores_filtrados_ad)
+# El objeto RDS en ad guardo el algoritmo en vez de las variables seleccionadas
+predictores_filtrados_ad <- predictores_filtrados_ad$optVariables
 con_predictores_filtrados_ai = gzfile("./ai/predictores_filtrados_ai.rds")
 predictores_filtrados_ai <- readRDS(con_predictores_filtrados_ai)
 con_predictores_filtrados_am = gzfile("./am/predictores_filtrados_am.rds")
@@ -44,41 +46,55 @@ con_trained_recipe_ao = gzfile("./ao/trained_recipe_ao.rds")
 trained_recipe_ao <- readRDS(con_trained_recipe_ao)
 
 
-generating_descriptors <- function(molecule) {
-  # Hay que hacer una funcion de cleaning_input
-  descriptors2d <- smilesf$calculating_descriptors2d(molecule)
-  descriptors3d <- smilesf$calculating_descriptors3d(molecule)
-  lipinski_descriptors <- smilesf$calculating_lipinski_descriptors(molecule)
-  descriptors_dataframe <- merge(descriptors2d, 
-                                 descriptors3d, 
-                                 by.x = 0, 
-                                 by.y = 0,
-                                 all.x = TRUE,
-                                 all.y = TRUE)
-  descriptors_dataframe <- merge(descriptors_dataframe, 
-                                 lipinski_descriptors, 
-                                 by.x = "Row.names", 
-                                 by.y = 0,
-                                 all.x = TRUE,
-                                 all.y = TRUE)
-  rownames(descriptors_dataframe) <- descriptors_dataframe$Row.names
-  descriptors_dataframe <- descriptors_dataframe[!grepl("Row.names", names(descriptors_dataframe))]
+bioactivity_prediction <- function(descriptors_dataframe, filter_values, preprocess_recipe, prediction_model, prediction_type, activity_name) {
   
-  return(descriptors_dataframe)
+  descriptors_dataframe <- bake(preprocess_recipe, new_data = descriptors_dataframe)
+  descriptors_dataframe <- descriptors_dataframe[, filter_values] 
+  descriptors_dataframe <- bind_rows(descriptors_dataframe)
+  
+  column_names <- c("Bioactividad", "% Verdadero", "% Falso", "Predicción")
+  
+  if (prediction_type == "prob") {
+    prediction <- predict(prediction_model, newdata = descriptors_dataframe, type = prediction_type) %>% 
+      mutate('class'=names(.)[apply(., 1, which.max)])
+    prediction_dataframe <- data.frame(bioactividad = activity_name, prediction)
+    colnames(prediction_dataframe) <- column_names
+    prediction_dataframe[c("% Verdadero", "% Falso")] <- lapply(prediction_dataframe[c("% Verdadero", "% Falso")], function(x) x * 100)
+    return(prediction_dataframe)
+  } else if (prediction_type == "raw") {
+    prediction <- predict(prediction_model, newdata = descriptors_dataframe, type = prediction_type)
+    prediction_dataframe <- data.frame(activity_name, "---", "---", as.character(prediction))
+    colnames(prediction_dataframe) <- column_names
+    return(prediction_dataframe)
+  } else {
+    return(print("Debe ingresar un tipo de predicción válida"))
+  }
 }
 
-bioactivity_prediction <- function(descriptors_dataframe, filter_values, preprocess_recipe, prediction_model, prediction_type) {
+
+generate_predictions <- function(descriptors) {
   
-  descriptors_dataframe <- descriptors_dataframe[, filter_values] 
-  descriptors_dataframe <- bake(preprocess_recipe, new_data = descriptors_dataframe)
-  prediction <- predict(prediction_model, new_data = descriptors_dataframe, type = prediction_type)
+  ac_prediction <- bioactivity_prediction(descriptors, predictores_filtrados_ac, trained_recipe_ac, modelo_ac, "prob", "Anticancerígeno")
+  ad_prediction <- bioactivity_prediction(descriptors, predictores_filtrados_ad, trained_recipe_ad, modelo_ad, "raw", "Antidiabético")
+  ai_prediction <- bioactivity_prediction(descriptors, predictores_filtrados_ai, trained_recipe_ai, modelo_ai, "prob", "Antiinflamatorio")
+  am_prediction <- bioactivity_prediction(descriptors, predictores_filtrados_am, trained_recipe_am, modelo_am, "raw", "Antimicrobiano")
+  ao_prediction <- bioactivity_prediction(descriptors, predictores_filtrados_ao, trained_recipe_ao, modelo_ao, "prob", "Antioxidante")
   
-  return(prediction)
+  unified_predictions <- merge(x = ac_prediction, y = ad_prediction, all = TRUE)
+  unified_predictions <- merge(x = unified_predictions, y = ai_prediction, all = TRUE)
+  unified_predictions <- merge(x = unified_predictions, y = am_prediction, all = TRUE)
+  unified_predictions <- merge(x = unified_predictions, y = ao_prediction, all = TRUE)
+  
+  unified_predictions[unified_predictions == FALSE] <- "No posee bioactividad"
+  unified_predictions[unified_predictions == TRUE] <- "Si posee bioactividad"
+  
+  return (unified_predictions)
 }
+
 
 ui <- navbarPage(
 
-  theme = shinytheme("slate"),
+  theme = shinytheme("darkly"),
   "Nombre de pagina",
   tabPanel("Predicciones de bioactividades",
     fluidPage(
@@ -113,45 +129,44 @@ ui <- navbarPage(
 )
   
   
-
-
 server <- function(input, output, session) {
 
-  descriptors <- eventReactive(input$prediction_button, {
-       dataframe <- generating_descriptors(input$user_smiles)
+  user_predictions <- eventReactive(input$prediction_button, {
+    user_descriptors_dataframe <- smilesf$generating_descriptors(input$user_smiles)
+    predictions <- generate_predictions(user_descriptors_dataframe)
   })
   
-  creating_table <- function(descriptors) {
-    ac_prediction <- bioactivity_prediction(descriptors, predictores_filtrados_ac, trained_recipe_ac, modelo_ac, "class")
-    ad_prediction <- bioactivity_prediction(descriptors, predictores_filtrados_ad, trained_recipe_ad, modelo_ad, "class")
-    ai_prediction <- bioactivity_prediction(descriptors, predictores_filtrados_ai, trained_recipe_ai, modelo_ai, "class")
-    am_prediction <- bioactivity_prediction(descriptors, predictores_filtrados_am, trained_recipe_am, modelo_am, "class")
-    ao_prediction <- bioactivity_prediction(descriptors, predictores_filtrados_ao, trained_recipe_ao, modelo_ao, "class")
-  }
-    
-  output$prediction_table <- renderTable(creating_table())
+  output$prediction_table <- renderTable({
+    user_predictions()
+    },     
+    striped = TRUE,
+    hover = TRUE,
+    spacing = 'l',
+    width = '100%',
+    digits = 2,
+    na = 'missing',
+    align = 'c'
+    )
   
   generate_image <- eventReactive(input$prediction_button, {
     smilesf$drawing_smiles(input$user_smiles)
-
-    }
-  )
+    })
    
   output$smiles_image <- renderImage({
       
       generate_image()
-      width  <- session$clientData$output_smiles_image_width
+      # width  <- session$clientData$output_smiles_image_width
       list(
-        #ver si funciona en python enviarlo a al folder img
         src = "./img/2D_smiles.png",
         contentType = "image/png",
         alt = "Imagen de molecula",
-        width = width
+        width = '100%'
       )     
     }, 
-    deleteFile = T
+    deleteFile = F
   ) 
 }
+
 
 # Run the application 
 shinyApp(ui = ui, server = server)
