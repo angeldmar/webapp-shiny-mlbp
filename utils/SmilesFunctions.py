@@ -255,7 +255,7 @@ def drawing_smiles(string_smiles):
 
     m = Chem.MolFromSmiles(string_smiles)
     AllChem.Compute2DCoords(m)
-    dr = rdMolDraw2D.MolDraw2DSVG(1080, 1080)
+    dr = rdMolDraw2D.MolDraw2DSVG(1920, 1080)
     opts = dr.drawOptions()
     opts.clearBackground = False
     dr.DrawMolecule(m)
@@ -263,12 +263,20 @@ def drawing_smiles(string_smiles):
     svg_text = dr.GetDrawingText()
     svg2png(bytestring=svg_text, write_to="./img/2D_smiles.png")
 
-#  Entry point Solo debe usarse en test, de lo contrario generara errores en reticulate
+
+def validating_smiles(string_smiles):
+    try:
+        m = Chem.MolFromSmiles(string_smiles)
+    except Exception as x:
+        m = None
+
+    if m is None:
+        return False
+    else:
+        return True
 
 
 # if __name__ == "__main__":
 #
 #     smiles_de_prueba = input("Introduce tu smiles:")
-#     descriptors = generating_descriptors(smiles_de_prueba)
-#     print(descriptors)
-#     print(descriptors.dtypes)
+#     print(validating_smiles(smiles_de_prueba))

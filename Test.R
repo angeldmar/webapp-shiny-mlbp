@@ -9,6 +9,7 @@ library(randomForest)
 library(inTrees)
 library(snn)
 library(wsrf)
+library(stringr)
 
 use_virtualenv("./renv/python/virtualenvs/renv-python-3.11")
 
@@ -132,3 +133,7 @@ predictions_table <- as.data.table(predictions_dataframe)
 #   return(descriptors_dataframe)
 # }
 
+str_detect("casa", "c")
+str_detect("gato", "c")
+input_smiles <- "CN=C=O"
+str_detect(input_smiles, "/^([^J][0-9BCOHNSOPrIFla@+\-\[\]\(\)\\\/%=#$]{6,})$/ig")

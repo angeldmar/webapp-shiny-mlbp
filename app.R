@@ -1,10 +1,10 @@
 library(shiny)
 library(shinythemes)
+library(shinyFeedback)
 library(reticulate)
+library(stringr)
 library(caret)
 library(recipes)
-library(RSNNS)
-library(RRF)
 
 use_virtualenv("./renv/python/virtualenvs/renv-python-3.11")
 
@@ -59,7 +59,7 @@ bioactivity_prediction <- function(descriptors_dataframe, filter_values, preproc
       mutate('class'=names(.)[apply(., 1, which.max)])
     prediction_dataframe <- data.frame(bioactividad = activity_name, prediction)
     colnames(prediction_dataframe) <- column_names
-    prediction_dataframe[c("% Verdadero", "% Falso")] <- lapply(prediction_dataframe[c("% Verdadero", "% Falso")], function(x) x * 100)
+    prediction_dataframe[c("% Verdadero", "% Falso")] <- lapply(prediction_dataframe[c("% Verdadero", "% Falso")], function(x) round(x * 100))
     return(prediction_dataframe)
   } else if (prediction_type == "raw") {
     prediction <- predict(prediction_model, newdata = descriptors_dataframe, type = prediction_type)
@@ -72,7 +72,10 @@ bioactivity_prediction <- function(descriptors_dataframe, filter_values, preproc
 }
 
 
-generate_predictions <- function(descriptors) {
+generate_predictions <- function(descriptors, id) {
+  
+  notify("Generando predicciones ...", id = id)
+  on.exit(removeNotification(id), add = TRUE)
   
   ac_prediction <- bioactivity_prediction(descriptors, predictores_filtrados_ac, trained_recipe_ac, modelo_ac, "prob", "Anticancerígeno")
   ad_prediction <- bioactivity_prediction(descriptors, predictores_filtrados_ad, trained_recipe_ad, modelo_ad, "raw", "Antidiabético")
@@ -92,12 +95,44 @@ generate_predictions <- function(descriptors) {
 }
 
 
-ui <- navbarPage(
+notify <- function(msg, id = NULL){
+  showNotification(msg, id = id, duration = NULL, closeButton = FALSE)
+}
 
+
+ui <- navbarPage(
+  
   theme = shinytheme("darkly"),
   "Nombre de pagina",
   tabPanel("Predicciones de bioactividades",
     fluidPage(
+      tags$head(
+        tags$style(HTML("
+          
+          .shiny-image-output{
+            display: block;
+            max-width: 100%;
+            max-height: 100%;
+            position: absolute;
+            top: 0;
+            bottom: 0;
+            left: 0;
+            right: 0;
+          }
+          
+          img {
+            display: block;
+            margin-left: auto;
+            margin-right: auto;
+            aspect-ratio: 16 / 9;
+            max-height: 70vh;
+            max-width: 100%;
+            width: auto;
+            position: relative;
+            overflow: hidden;
+          }"))
+      ),
+      useShinyFeedback(),
       fluidRow(
         sidebarLayout(
           sidebarPanel(
@@ -110,14 +145,10 @@ ui <- navbarPage(
         )
       ),
       fluidRow(
-        column(2,
-          ),
-        column(8,
+        column(12,
           imageOutput("smiles_image")
         ),
-        column(2,
-        )
-      ),
+      )
     )
   ),
   navbarMenu("Acerca de la pagina",
@@ -131,9 +162,21 @@ ui <- navbarPage(
   
 server <- function(input, output, session) {
 
-  user_predictions <- eventReactive(input$prediction_button, {
-    user_descriptors_dataframe <- smilesf$generating_descriptors(input$user_smiles)
-    predictions <- generate_predictions(user_descriptors_dataframe)
+  clean_input <- eventReactive(input$prediction_button, {
+    req(input$user_smiles)
+    input_smiles <- gsub(" ", "", input$user_smiles)
+    is_smile <-smilesf$validating_smiles(input_smiles)
+    shinyFeedback::feedbackDanger("user_smiles", !is_smile, "Por favor introduzca un código SMILES válido")
+    req(is_smile, cancelOutput = TRUE)
+    return(input_smiles)
+  })
+  
+  
+  user_predictions <- reactive({
+    id <- notify("Calculando descriptores...")
+    on.exit(removeNotification(id), add = TRUE)
+    user_descriptors_dataframe <- smilesf$generating_descriptors(clean_input())
+    predictions <- generate_predictions(user_descriptors_dataframe, id)
   })
   
   output$prediction_table <- renderTable({
@@ -148,19 +191,17 @@ server <- function(input, output, session) {
     align = 'c'
     )
   
-  generate_image <- eventReactive(input$prediction_button, {
-    smilesf$drawing_smiles(input$user_smiles)
+  generate_image <- reactive({
+    smilesf$drawing_smiles(clean_input())
     })
    
   output$smiles_image <- renderImage({
       
       generate_image()
-      # width  <- session$clientData$output_smiles_image_width
       list(
         src = "./img/2D_smiles.png",
         contentType = "image/png",
-        alt = "Imagen de molecula",
-        width = '100%'
+        alt = "Imagen de molecula"
       )     
     }, 
     deleteFile = F
