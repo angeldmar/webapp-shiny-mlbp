@@ -45,31 +45,19 @@ trained_recipe_am <- readRDS(con_trained_recipe_am)
 con_trained_recipe_ao = gzfile("./ao/trained_recipe_ao.rds")
 trained_recipe_ao <- readRDS(con_trained_recipe_ao)
 
-
-bioactivity_prediction <- function(descriptors_dataframe, filter_values, preprocess_recipe, prediction_model, prediction_type, activity_name) {
+bioactivity_prediction <- function(descriptors_dataframe, filter_values, preprocess_recipe, prediction_model, activity_name) {
   
   descriptors_dataframe <- bake(preprocess_recipe, new_data = descriptors_dataframe)
   descriptors_dataframe <- descriptors_dataframe[, filter_values] 
   descriptors_dataframe <- bind_rows(descriptors_dataframe)
   
-  column_names <- c("Bioactividad", "% Verdadero", "% Falso", "Predicción")
-  
-  if (prediction_type == "prob") {
-    prediction <- predict(prediction_model, newdata = descriptors_dataframe, type = prediction_type) %>% 
-      mutate('class'=names(.)[apply(., 1, which.max)])
-    prediction_dataframe <- data.frame(bioactividad = activity_name, prediction)
-    colnames(prediction_dataframe) <- column_names
-    prediction_dataframe[c("% Verdadero", "% Falso")] <- lapply(prediction_dataframe[c("% Verdadero", "% Falso")], function(x) round(x * 100))
-    return(prediction_dataframe)
-  } else if (prediction_type == "raw") {
-    prediction <- predict(prediction_model, newdata = descriptors_dataframe, type = prediction_type)
-    prediction_dataframe <- data.frame(activity_name, "---", "---", as.character(prediction))
-    colnames(prediction_dataframe) <- column_names
-    return(prediction_dataframe)
-  } else {
-    return(print("Debe ingresar un tipo de predicción válida"))
-  }
+  column_names <- c("Bioactividad"," Predicción")
+  prediction <- predict(prediction_model, newdata = descriptors_dataframe, type = "raw")
+  prediction_dataframe <- data.frame(activity_name, as.character(prediction))
+  colnames(prediction_dataframe) <- column_names
+  return(prediction_dataframe)
 }
+
 
 
 generate_predictions <- function(descriptors, id) {
@@ -77,19 +65,19 @@ generate_predictions <- function(descriptors, id) {
   notify("Generando predicciones ...", id = id)
   on.exit(removeNotification(id), add = TRUE)
   
-  ac_prediction <- bioactivity_prediction(descriptors, predictores_filtrados_ac, trained_recipe_ac, modelo_ac, "prob", "Anticancerígeno")
-  ad_prediction <- bioactivity_prediction(descriptors, predictores_filtrados_ad, trained_recipe_ad, modelo_ad, "raw", "Antidiabético")
-  ai_prediction <- bioactivity_prediction(descriptors, predictores_filtrados_ai, trained_recipe_ai, modelo_ai, "prob", "Antiinflamatorio")
-  am_prediction <- bioactivity_prediction(descriptors, predictores_filtrados_am, trained_recipe_am, modelo_am, "raw", "Antimicrobiano")
-  ao_prediction <- bioactivity_prediction(descriptors, predictores_filtrados_ao, trained_recipe_ao, modelo_ao, "prob", "Antioxidante")
+  ac_prediction <- bioactivity_prediction(descriptors, predictores_filtrados_ac, trained_recipe_ac, modelo_ac, "Anticancerígeno")
+  ad_prediction <- bioactivity_prediction(descriptors, predictores_filtrados_ad, trained_recipe_ad, modelo_ad, "Antidiabético")
+  ai_prediction <- bioactivity_prediction(descriptors, predictores_filtrados_ai, trained_recipe_ai, modelo_ai, "Antiinflamatorio")
+  am_prediction <- bioactivity_prediction(descriptors, predictores_filtrados_am, trained_recipe_am, modelo_am, "Antimicrobiano")
+  ao_prediction <- bioactivity_prediction(descriptors, predictores_filtrados_ao, trained_recipe_ao, modelo_ao, "Antioxidante")
   
   unified_predictions <- merge(x = ac_prediction, y = ad_prediction, all = TRUE)
   unified_predictions <- merge(x = unified_predictions, y = ai_prediction, all = TRUE)
   unified_predictions <- merge(x = unified_predictions, y = am_prediction, all = TRUE)
   unified_predictions <- merge(x = unified_predictions, y = ao_prediction, all = TRUE)
   
-  unified_predictions[unified_predictions == FALSE] <- "No posee bioactividad"
-  unified_predictions[unified_predictions == TRUE] <- "Si posee bioactividad"
+  unified_predictions[unified_predictions == FALSE] <- "No"
+  unified_predictions[unified_predictions == TRUE] <- "Sí"
   
   return (unified_predictions)
 }
@@ -102,22 +90,15 @@ notify <- function(msg, id = NULL){
 
 ui <- navbarPage(
   
-  theme = shinytheme("darkly"),
-  "Nombre de pagina",
+  theme = shinytheme("united"),
+  "MLBioPrediction",
   tabPanel("Predicciones de bioactividades",
     fluidPage(
       tags$head(
         tags$style(HTML("
           
-          .shiny-image-output{
-            display: block;
-            max-width: 100%;
-            max-height: 100%;
-            position: absolute;
-            top: 0;
-            bottom: 0;
-            left: 0;
-            right: 0;
+          a {
+          display: block;
           }
           
           img {
@@ -130,13 +111,24 @@ ui <- navbarPage(
             width: auto;
             position: relative;
             overflow: hidden;
+          }
+          
+          .shiny-image-output {
+            display: block;
+            max-width: 100%;
+            max-height: 100%;
+            position: absolute;
+            top: 0;
+            bottom: 0;
+            left: 0;
+            right: 0;
           }"))
       ),
       useShinyFeedback(),
       fluidRow(
         sidebarLayout(
           sidebarPanel(
-            textInput("user_smiles", "Introduce tu codigo Smiles"),
+            textInput("user_smiles", "Introduce tu código SMILES canónico"),
             actionButton("prediction_button", "Calcular predicciones", class = "btn-block btn-lg")
           ),
           mainPanel(
@@ -151,12 +143,35 @@ ui <- navbarPage(
       )
     )
   ),
-  navbarMenu("Acerca de la pagina",
-    tabPanel("Funcionamiento", "Bla bla"),
-    tabPanel("Documentos", "Articulo cientifico sin publicar, pagina de tesis"),
-    tabPanel("Precision de modelos", "lorem ipsum")
-  ),
-  tabPanel("Acerca de los autores", "loren ipsum")
+  navbarMenu("Acerca de la página",
+    tabPanel("Funcionamiento", 
+             tags$h5("Esta página está diseñada para predecir actividades biológicas de estructuras 
+                     moleculares utilizando el código SMILES canónico. Las predicciones se basan en 
+                     modelos entrenados a través del aprendizaje automatizado. "),
+             tags$h5("A continuación, se describen los modelos utilizados y las precisiones obtenidas 
+                     sobre moléculas de prueba, para la predicción de cada una de las bioactividades: "),
+             tableOutput("model_info")
+             ),
+    tabPanel("Documentos", 
+             tags$h3("A continuación se presentan enlaces a documentos de posible interes:"),
+             tags$a(href="","Articulo cientifico sin publicar (opcional)"),
+             tags$a(href="","Tesis de grado(si la subimos a algun lado)"),
+             tags$a(href="","Repositorio de los modelos de machine learning"),
+             tags$a(href="","Repositorio de la aplicación web")
+            )
+    ),
+  tabPanel("Acerca de los autores", 
+           tags$h5("Somos Angel Martínez, Erleigh Hogan y  Galilea Wug, Químicos Farmacéuticos egresados 
+                   de la Facultad de Ciencias Químicas y Farmacia de la Universidad de San Carlos de Guatemala."), 
+           tags$h5("Decidimos realizar este proyecto como investigadores del Departamento de Química Medicinal 
+                   ya que reconocemos que la industria farmacéutica consume muchos recursos para encontrar
+                   moléculas con potencial biológico que puedan ser utilizadas para el desarrollo de nuevos 
+                   fármacos."),
+           tags$h5("Con esta herramienta web de libre acceso pretendemos ayudar en la reducción de recursos 
+                   para que el investigador, solo utilizando el código SMILES, pueda predecir la actividad 
+                   biológica de su estructura molecular para posteriormente confirmar dicha predicción a 
+                   través de ensayos químicos específicos.")
+  )
 )
   
   
@@ -206,6 +221,23 @@ server <- function(input, output, session) {
     }, 
     deleteFile = F
   ) 
+  
+  output$model_info <- renderTable({
+    model_table_info = data.frame(x1 = c("Anticancerígena", "Antidiabética", "Antiinflamatoria", "Antimicrobiano", "Antioxidante"),  
+                                  x2 = c("RRFglobal", "rfRules", "parRF", "snn",  "wsrf"),
+                                  x3 = c("73.33%", "75.82%", "71.43%", "81.32%", "83.52%"))
+    
+    colnames(model_table_info) <- c("Bioactividad", "Modelo utilizado", "Precisión")
+    return(model_table_info)
+  },
+    striped = TRUE,
+    hover = TRUE,
+    spacing = 'l',
+    width = '100%',
+    digits = 2,
+    na = 'missing',
+    align = 'c'
+  )
 }
 
 
