@@ -154,12 +154,15 @@ ui <- navbarPage(
              ),
     tabPanel("Documentos", 
              tags$h3("A continuación se presentan enlaces a documentos de posible interes:"),
-             tags$a(href="","Articulo cientifico sin publicar (opcional)"),
-             tags$a(href="","Tesis de grado(si la subimos a algun lado)"),
-             tags$a(href="","Repositorio de los modelos de machine learning"),
-             tags$a(href="","Repositorio de la aplicación web")
-            )
-    ),
+             tags$div(
+               HTML('<a href="" target="_blank" rel="noopener noreferrer">Articulo cientifico sin publicar (opcional)</a>
+                    <a href="" target="_blank" rel="noopener noreferrer">Tesis de grado(si la subimos a algun lado)</a>
+                    <a href="https://github.com/angeldmar/Tesis-prediccion-bioactividades" target="_blank" rel="noopener noreferrer">Repositorio de los modelos de machine learning</a>
+                    <a href="https://github.com/angeldmar/webapp-shiny-mlbp" target="_blank" rel="noopener noreferrer">Repositorio de la aplicación web</a>'
+                    )
+             )
+    )
+  ),
   tabPanel("Acerca de los autores", 
            tags$h5("Somos Angel Martínez, Erleigh Hogan y  Galilea Wug, Químicos Farmacéuticos egresados 
                    de la Facultad de Ciencias Químicas y Farmacia de la Universidad de San Carlos de Guatemala."), 
@@ -243,3 +246,10 @@ server <- function(input, output, session) {
 
 # Run the application 
 shinyApp(ui = ui, server = server)
+
+
+# Para generar el reactlog
+# reactlog::reactlog_enable() # antes de ejecutar la app
+# shiny::reactlogShow() # despues de ejecutar la app
+
+

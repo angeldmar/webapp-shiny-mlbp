@@ -263,7 +263,7 @@ rsconnect/
 *.wdp
 
 # Graphics Interchange Format
-*.gif
+*.gifhttps://www.bing.com/images/search?q=logo+facultad+de+quimica+y+farmacia&mmreqh=gXQdjVr7HUaXHZdWi7JDbBl8IgoUVPhCWlLdeS3FJcw%3d
 
 # RAW
 *.raw
@@ -272,7 +272,8 @@ rsconnect/
 *.webp
 
 # Portable Network Graphics
-*.png
+.png
+2D_smiles.png
 
 # Animated Portable Network Graphics
 *.apng
