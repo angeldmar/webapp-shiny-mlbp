@@ -6,12 +6,13 @@ library(stringr)
 library(caret)
 library(recipes)
 library(RRF)
+library(RSNNS)
 library(snn)
 library(inTrees)
 library(wsrf)
 library(randomForest)
 
-use_virtualenv("./renv/python/virtualenvs/renv-python-3.11")
+# use_virtualenv("./renv/python/virtualenvs/renv-python-3.11")
 
 smilesf <- import("utils.SmilesFunctions")
 

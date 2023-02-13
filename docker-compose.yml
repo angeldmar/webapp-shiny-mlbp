@@ -1,0 +1,17 @@
+version: '3.8'
+
+services:
+  shiny-app:
+    build: .
+    ports:
+      - "3838:3838"
+    volumes:     
+      - ./app.R:/srv/shiny-server/webapp-shiny-mlbp/app.R
+      - ./utils/:/srv/shiny-server/webapp-shiny-mlbp/utils/
+      - ./ac:/srv/shiny-server/webapp-shiny-mlbp/ac/
+      - ./ad:/srv/shiny-server/webapp-shiny-mlbp/ad/
+      - ./ai:/srv/shiny-server/webapp-shiny-mlbp/ai/
+      - ./am:/srv/shiny-server/webapp-shiny-mlbp/am/
+      - ./ao:/srv/shiny-server/webapp-shiny-mlbp/ao/
+      - ./img:/srv/shiny-server/webapp-shiny-mlbp/img/ 
+      
