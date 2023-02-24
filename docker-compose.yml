@@ -1,4 +1,5 @@
-version: '3.8'
+# Versión que usa el servidor
+version: '3.3'
 
 services:
   shiny-app:

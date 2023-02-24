@@ -65,7 +65,6 @@ bioactivity_prediction <- function(descriptors_dataframe, filter_values, preproc
 }
 
 
-
 generate_predictions <- function(descriptors, id) {
   
   notify("Generando predicciones ...", id = id)
@@ -161,11 +160,11 @@ ui <- navbarPage(
     tabPanel("Documentos", 
              tags$h3("A continuación se presentan enlaces a documentos de posible interes:"),
              tags$div(
-               HTML('<a href="" target="_blank" rel="noopener noreferrer">Articulo cientifico sin publicar (opcional)</a>
-                    <a href="" target="_blank" rel="noopener noreferrer">Tesis de grado(si la subimos a algun lado)</a>
-                    <a href="https://github.com/angeldmar/Tesis-prediccion-bioactividades" target="_blank" rel="noopener noreferrer">Repositorio de los modelos de machine learning</a>
+               HTML(# <a href="" target="_blank" rel="noopener noreferrer">Articulo cientifico sin publicar (opcional)</a>
+                    # <a href="" target="_blank" rel="noopener noreferrer">Tesis de grado(si la subimos a algun lado)</a>
+                    '<a href="https://github.com/angeldmar/Tesis-prediccion-bioactividades" target="_blank" rel="noopener noreferrer">Repositorio de los modelos de machine learning</a>
                     <a href="https://github.com/angeldmar/webapp-shiny-mlbp" target="_blank" rel="noopener noreferrer">Repositorio de la aplicación web</a>'
-                    )
+                  )
              )
     )
   ),
@@ -228,13 +227,24 @@ server <- function(input, output, session) {
         alt = "Imagen de molecula"
       )     
     }, 
-    deleteFile = F
+    deleteFile = T
   ) 
   
   output$model_info <- renderTable({
-    model_table_info = data.frame(x1 = c("Anticancerígena", "Antidiabética", "Antiinflamatoria", "Antimicrobiano", "Antioxidante"),  
-                                  x2 = c("RRFglobal", "rfRules", "parRF", "snn",  "wsrf"),
-                                  x3 = c("73.33%", "75.82%", "71.43%", "81.32%", "83.52%"))
+    model_table_info = data.frame(x1 = c("Anticancerígena", "Antidiabética", 
+                                         "Antiinflamatoria", "Antimicrobiano", 
+                                         "Antioxidante"),  
+                                  # x2 = c("Bosque aleatorio regularizado", 
+                                  #        "Modelo basado en reglas de bosques aleatorios", 
+                                  #        "Perceptrón multicapa", 
+                                  #        "Clasificador de vecino más cercano estabilizado",
+                                  #        "Bosque aleatorio de subespacio ponderado"),
+                                x2 = c("Regularized Random Forest", 
+                                       "Random Forest Rule-Based Model", 
+                                       "Multi-Layer Perceptron", 
+                                       "Stabilized Nearest Neighbor Classifier",
+                                       "Weighted Subspace Random Forest"),
+                                  x3 = c("73.33%", "75.82%", "74.73%", "81.32%", "83.52%"))
     
     colnames(model_table_info) <- c("Bioactividad", "Modelo utilizado", "Precisión")
     return(model_table_info)
@@ -252,7 +262,6 @@ server <- function(input, output, session) {
 
 # Run the application 
 shinyApp(ui = ui, server = server)
-
 
 # Para generar el reactlog
 # reactlog::reactlog_enable() # antes de ejecutar la app

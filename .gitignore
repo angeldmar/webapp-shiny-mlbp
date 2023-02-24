@@ -307,4 +307,6 @@ rsconnect/
 *.max
 
 
+.idea
+
 # End of https://www.toptal.com/developers/gitignore/api/python,r,linux,images
