@@ -14,5 +14,6 @@ services:
       - ./ai:/srv/shiny-server/webapp-shiny-mlbp/ai/
       - ./am:/srv/shiny-server/webapp-shiny-mlbp/am/
       - ./ao:/srv/shiny-server/webapp-shiny-mlbp/ao/
-      - ./img:/srv/shiny-server/webapp-shiny-mlbp/img/ 
+      - ./img:/srv/shiny-server/webapp-shiny-mlbp/img/
+      - ./www:/srv/shiny-server/webapp-shiny-mlbp/www/
       
