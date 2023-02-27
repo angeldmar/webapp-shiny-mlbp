@@ -55,7 +55,7 @@ Para salir del contenedor, basta con escribir ``` exit ```  en la terminal.
 
 El contenedor se conectará al puerto 3838, por lo que se puede acceder a la aplicación desde el navegador. Para acceder a la app, se puede escribir en la barra de direcciones cualquiera de estas URLs:
 
-http://localhost:3838
+http://localhost:3838 <br>
 http://127.0.0.1:3838
 
 

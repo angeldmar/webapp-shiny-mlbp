@@ -127,7 +127,12 @@ ui <- navbarPage(
             bottom: 0;
             left: 0;
             right: 0;
-          }"))
+          }")),
+        tags$link( 
+          rel = "shortcut icon", 
+          type = "image/png", 
+          href = "logo.png" 
+        ), 
       ),
       useShinyFeedback(),
       fluidRow(
