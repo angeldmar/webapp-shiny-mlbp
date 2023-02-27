@@ -2,10 +2,10 @@
 
 ## Acceso
 
-La página web está disponible en este [enlace](www.pagina.com)
+La página web está disponible en [mlbiopredict](https://mlbiopredict.com). El código con el que se generaron los modelos se encuentra en este [repositorio](https://github.com/angeldmar/Tesis-prediccion-bioactividades)
 ## Opciones de instalación
 
-Existen dos métodos para recrear la página en un entorno de desarrollo.
+Se pueden utilizar estos dos métodos para recrear la herramienta web en un entorno de desarrollo.
 
 ### Método 1: Renv
 
@@ -15,12 +15,13 @@ El código incluye un entorno virtual de R y Python creado con renv.
  * RStudio (opcional)
  * Python 3.9 o superior
  * Pip
+    * virtualenv (paquete de Python)
  * R 4.2 o superior
     * renv (paquete de R)
 
 ##### Instalación de dependencias:
 
-EEn RStudio o en la terminal, al iniciar la consola interactiva de R dentro del directorio de la aplicación, se instalarán automáticamente las dependencias de R y Python. Si esto no sucede, se puede utilizar el comando  ```renv::restore()``` dentro de la consola de R.
+En RStudio o en la terminal, al iniciar la consola interactiva de R dentro del directorio de la aplicación, se instalarán automáticamente las dependencias de R y Python. Si esto no sucede, se puede utilizar el comando  ```renv::restore()``` dentro de la consola de R.
 
 Si no se desea usar renv se puede instalar las dependencias de Python con el comando ```pip3 install -r requirements.txt``` y las dependencias de R manualmente. LLos paquetes y sus versiones se listan para Python en el archivo requirements.txt, y las de R en renv.lock.
 ##### Uso:
