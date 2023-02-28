@@ -177,9 +177,10 @@ ui <- navbarPage(
            tags$h5("Somos Angel Martínez, Erleigh Hogan y  Galilea Wug, Químicos Farmacéuticos egresados 
                    de la Facultad de Ciencias Químicas y Farmacia de la Universidad de San Carlos de Guatemala."), 
            tags$h5("Decidimos realizar este proyecto como investigadores del Departamento de Química Medicinal 
-                   ya que reconocemos que la industria farmacéutica consume muchos recursos para encontrar
-                   moléculas con potencial biológico que puedan ser utilizadas para el desarrollo de nuevos 
-                   fármacos."),
+                    con la asesoría de nuestros catedráticos, MSc. Nereida Marroquín y Lic. Allan Vásquez, ya 
+                    que reconocemos que la industria farmacéutica consume muchos recursos para encontrar moléculas 
+                    con potencial biológico que puedan ser utilizadas para el desarrollo de nuevos fármacos.
+                    "),
            tags$h5("Con esta herramienta web de libre acceso pretendemos ayudar en la reducción de recursos 
                    para que el investigador, solo utilizando el código SMILES, pueda predecir la actividad 
                    biológica de su estructura molecular para posteriormente confirmar dicha predicción a 
