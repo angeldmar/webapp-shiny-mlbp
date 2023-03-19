@@ -127,7 +127,30 @@ ui <- navbarPage(
             bottom: 0;
             left: 0;
             right: 0;
-          }")),
+          }
+            
+          .warning-box {
+            text-align: center; 
+            border-radius: 5px; 
+            padding: 10px; 
+            margin-bottom: 10px;
+            margin-left: 5%;
+            margin-right: 5%;
+            cursor: pointer;
+            color: white;
+            background-color: #e95420;
+          }
+          
+          .warning-title {
+            margin-top: 0px;
+            text-align: center; 
+          }
+        /*Es para cambiar de color con el hover,
+        .link-box:hover {
+          background-color: #ac3911;          
+        }*/
+          ")),
+
         tags$link( 
           rel = "shortcut icon", 
           type = "image/png", 
@@ -142,9 +165,41 @@ ui <- navbarPage(
             actionButton("prediction_button", "Calcular predicciones", class = "btn-block btn-lg")
           ),
           mainPanel(
-            tableOutput("prediction_table")
-          )
+            conditionalPanel(
+              condition = "input.prediction_button == 0",
+              
+              tags$h2(class = "warning-title", "Limitaciones"),
+              
+              tags$div(
+                class = "warning-box",
+                "Es posible que en ocasiones genere información incorrecta.",
+              ),
+              tags$div(
+                class = "warning-box",
+                "Es probable que proporcione resultados más precisos al trabajar 
+                con moléculas de origen natural y sus derivados, en comparación 
+                con aquellas de origen sintético."
+              ),
+              tags$div(
+                id = "box1",
+                class = "warning-box link-box",
+                "En la sección de Funcionamiento encontrarás información 
+                detallada sobre los modelos y su precisión."
+              ),
+              tags$div(
+                id = "box_2",
+                class = "warning-box link-box",
+                "Si necesitas información adicional y en mayor profundidad, 
+                puedes consultar la documentación disponible en la página."
+              ),
+            ),
+            conditionalPanel(
+              condition = "input.prediction_button > 0",
+              tableOutput("prediction_table")
+            )
+          ),
         )
+        
       ),
       fluidRow(
         column(12,
@@ -154,15 +209,17 @@ ui <- navbarPage(
     )
   ),
   navbarMenu("Acerca de la página",
-    tabPanel("Funcionamiento", 
+    tabPanel("Funcionamiento",
+             id = "func",
              tags$h5("Esta página está diseñada para predecir actividades biológicas de estructuras 
                      moleculares utilizando el código SMILES canónico. Las predicciones se basan en 
-                     modelos entrenados a través del aprendizaje automatizado. "),
+                     modelos entrenados a partir de moleculas de origen natural y derivados a través 
+                     de algoritmos de aprendizaje automatizado. "),
              tags$h5("A continuación, se describen los modelos utilizados y las precisiones obtenidas 
                      sobre moléculas de prueba, para la predicción de cada una de las bioactividades: "),
              tableOutput("model_info")
              ),
-    tabPanel("Documentos", 
+    tabPanel("Documentos",
              tags$h3("A continuación se presentan enlaces a documentos de posible interes:"),
              tags$div(
                HTML(# <a href="" target="_blank" rel="noopener noreferrer">Articulo cientifico sin publicar (opcional)</a>
@@ -190,7 +247,11 @@ ui <- navbarPage(
   
   
 server <- function(input, output, session) {
-
+  
+  observeEvent(input$prediction_button, {
+    updateTabsetPanel(session, "tabset", selected = "prediction_table")
+  })
+  
   clean_input <- eventReactive(input$prediction_button, {
     req(input$user_smiles)
     input_smiles <- gsub(" ", "", input$user_smiles)
@@ -245,11 +306,11 @@ server <- function(input, output, session) {
                                   #        "Perceptrón multicapa", 
                                   #        "Clasificador de vecino más cercano estabilizado",
                                   #        "Bosque aleatorio de subespacio ponderado"),
-                                x2 = c("Regularized Random Forest", 
-                                       "Random Forest Rule-Based Model", 
-                                       "Multi-Layer Perceptron", 
-                                       "Stabilized Nearest Neighbor Classifier",
-                                       "Weighted Subspace Random Forest"),
+                                  x2 = c("Regularized Random Forest", 
+                                         "Random Forest Rule-Based Model", 
+                                         "Multi-Layer Perceptron", 
+                                         "Stabilized Nearest Neighbor Classifier",
+                                         "Weighted Subspace Random Forest"),
                                   x3 = c("73.33%", "75.82%", "74.73%", "81.32%", "83.52%"))
     
     colnames(model_table_info) <- c("Bioactividad", "Modelo utilizado", "Precisión")
