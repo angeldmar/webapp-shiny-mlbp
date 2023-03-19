@@ -11,7 +11,6 @@ library(snn)
 library(inTrees)
 library(wsrf)
 library(randomForest)
-library(shinyWidgets)
 
 # use_virtualenv("./renv/python/virtualenvs/renv-python-3.11")
 
@@ -128,6 +127,20 @@ ui <- navbarPage(
             bottom: 0;
             left: 0;
             right: 0;
+          }
+            
+          .warning-box {
+            text-align: center; 
+            border-radius: 5px; 
+            padding: 10px; 
+            margin-bottom: 10px; 
+            cursor: pointer;
+            color: white;
+            background-color: #e95420;
+          }
+  
+          .link-box:hover {
+            background-color: #ac3911;          
           }")),
         tags$link( 
           rel = "shortcut icon", 
@@ -145,30 +158,35 @@ ui <- navbarPage(
           mainPanel(
             conditionalPanel(
               condition = "input.prediction_button == 0",
-              # tabsetPanel(
-              #   id = "tabset",
-              #   type = "tabs",
-              #   tabPanel("Advertencia", 
-              #            "Texto de Prueba"),
-              # )
-              "Es posible que en ocasiones genere información incorrecta.",
-              "Es probable que proporcione resultados más precisos al trabajar 
-              con moléculas de origen natural y sus derivados, en comparación 
-              con aquellas de origen sintético.",
-              "En la sección de Funcionamiento (enlace) encontrarás información 
-              detallada sobre los modelos y su precisión.",              
-              "Si necesitas información adicional y en mayor profundidad, 
-              puedes consultar la documentación (enlace) disponible en la página."
-              
-              
+              tags$div(
+                class = "warning-box",
+                "Es posible que en ocasiones genere información incorrecta.",
+              ),
+              tags$div(
+                class = "warning-box",
+                "Es probable que proporcione resultados más precisos al trabajar 
+                con moléculas de origen natural y sus derivados, en comparación 
+                con aquellas de origen sintético."
+              ),
+              tags$div(
+                class = "warning-box link-box",
+                "En la sección de Funcionamiento (enlace) encontrarás información 
+                detallada sobre los modelos y su precisión."
+              ),
+              tags$div(
+                id = "box_2",
+                class = "warning-box link-box",
+                "Si necesitas información adicional y en mayor profundidad, 
+                puedes consultar la documentación (enlace) disponible en la página."
+              ),
             ),
             conditionalPanel(
               condition = "input.prediction_button > 0",
-              # "Output",
               tableOutput("prediction_table")
             )
-          )
+          ),
         )
+        
       ),
       fluidRow(
         column(12,
@@ -218,6 +236,7 @@ server <- function(input, output, session) {
   observeEvent(input$prediction_button, {
     updateTabsetPanel(session, "tabset", selected = "prediction_table")
   })
+  
 
   clean_input <- eventReactive(input$prediction_button, {
     req(input$user_smiles)
@@ -273,11 +292,11 @@ server <- function(input, output, session) {
                                   #        "Perceptrón multicapa", 
                                   #        "Clasificador de vecino más cercano estabilizado",
                                   #        "Bosque aleatorio de subespacio ponderado"),
-                                x2 = c("Regularized Random Forest", 
-                                       "Random Forest Rule-Based Model", 
-                                       "Multi-Layer Perceptron", 
-                                       "Stabilized Nearest Neighbor Classifier",
-                                       "Weighted Subspace Random Forest"),
+                                  x2 = c("Regularized Random Forest", 
+                                         "Random Forest Rule-Based Model", 
+                                         "Multi-Layer Perceptron", 
+                                         "Stabilized Nearest Neighbor Classifier",
+                                         "Weighted Subspace Random Forest"),
                                   x3 = c("73.33%", "75.82%", "74.73%", "81.32%", "83.52%"))
     
     colnames(model_table_info) <- c("Bioactividad", "Modelo utilizado", "Precisión")
