@@ -11,6 +11,7 @@ library(snn)
 library(inTrees)
 library(wsrf)
 library(randomForest)
+library(shinyWidgets)
 
 # use_virtualenv("./renv/python/virtualenvs/renv-python-3.11")
 
@@ -142,7 +143,20 @@ ui <- navbarPage(
             actionButton("prediction_button", "Calcular predicciones", class = "btn-block btn-lg")
           ),
           mainPanel(
-            tableOutput("prediction_table")
+            conditionalPanel(
+              condition = "input.prediction_button == 0",
+              tabsetPanel(
+                id = "tabset",
+                type = "tabs",
+                tabPanel("Advertencia", 
+                         "Texto de Prueba"),
+              )
+            ),
+            conditionalPanel(
+              condition = "input.prediction_button > 0",
+              # "Output",
+              tableOutput("prediction_table")
+            )
           )
         )
       ),
@@ -190,6 +204,10 @@ ui <- navbarPage(
   
   
 server <- function(input, output, session) {
+  
+  observeEvent(input$prediction_button, {
+    updateTabsetPanel(session, "tabset", selected = "prediction_table")
+  })
 
   clean_input <- eventReactive(input$prediction_button, {
     req(input$user_smiles)
