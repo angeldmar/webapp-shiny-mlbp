@@ -145,12 +145,22 @@ ui <- navbarPage(
           mainPanel(
             conditionalPanel(
               condition = "input.prediction_button == 0",
-              tabsetPanel(
-                id = "tabset",
-                type = "tabs",
-                tabPanel("Advertencia", 
-                         "Texto de Prueba"),
-              )
+              # tabsetPanel(
+              #   id = "tabset",
+              #   type = "tabs",
+              #   tabPanel("Advertencia", 
+              #            "Texto de Prueba"),
+              # )
+              "Es posible que en ocasiones genere información incorrecta.",
+              "Es probable que proporcione resultados más precisos al trabajar 
+              con moléculas de origen natural y sus derivados, en comparación 
+              con aquellas de origen sintético.",
+              "En la sección de Funcionamiento (enlace) encontrarás información 
+              detallada sobre los modelos y su precisión.",              
+              "Si necesitas información adicional y en mayor profundidad, 
+              puedes consultar la documentación (enlace) disponible en la página."
+              
+              
             ),
             conditionalPanel(
               condition = "input.prediction_button > 0",
