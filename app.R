@@ -133,15 +133,24 @@ ui <- navbarPage(
             text-align: center; 
             border-radius: 5px; 
             padding: 10px; 
-            margin-bottom: 10px; 
+            margin-bottom: 10px;
+            margin-left: 5%;
+            margin-right: 5%;
             cursor: pointer;
             color: white;
             background-color: #e95420;
           }
-  
-          .link-box:hover {
-            background-color: #ac3911;          
-          }")),
+          
+          .warning-title {
+            margin-top: 0px;
+            text-align: center; 
+          }
+        /*Es para cambiar de color con el hover,
+        .link-box:hover {
+          background-color: #ac3911;          
+        }*/
+          ")),
+
         tags$link( 
           rel = "shortcut icon", 
           type = "image/png", 
@@ -158,6 +167,9 @@ ui <- navbarPage(
           mainPanel(
             conditionalPanel(
               condition = "input.prediction_button == 0",
+              
+              tags$h2(class = "warning-title", "Limitaciones"),
+              
               tags$div(
                 class = "warning-box",
                 "Es posible que en ocasiones genere información incorrecta.",
@@ -169,15 +181,16 @@ ui <- navbarPage(
                 con aquellas de origen sintético."
               ),
               tags$div(
+                id = "box1",
                 class = "warning-box link-box",
-                "En la sección de Funcionamiento (enlace) encontrarás información 
+                "En la sección de Funcionamiento encontrarás información 
                 detallada sobre los modelos y su precisión."
               ),
               tags$div(
                 id = "box_2",
                 class = "warning-box link-box",
                 "Si necesitas información adicional y en mayor profundidad, 
-                puedes consultar la documentación (enlace) disponible en la página."
+                puedes consultar la documentación disponible en la página."
               ),
             ),
             conditionalPanel(
@@ -196,15 +209,17 @@ ui <- navbarPage(
     )
   ),
   navbarMenu("Acerca de la página",
-    tabPanel("Funcionamiento", 
+    tabPanel("Funcionamiento",
+             id = "func",
              tags$h5("Esta página está diseñada para predecir actividades biológicas de estructuras 
                      moleculares utilizando el código SMILES canónico. Las predicciones se basan en 
-                     modelos entrenados a través del aprendizaje automatizado. "),
+                     modelos entrenados a partir de moleculas de origen natural y derivados a través 
+                     de algoritmos de aprendizaje automatizado. "),
              tags$h5("A continuación, se describen los modelos utilizados y las precisiones obtenidas 
                      sobre moléculas de prueba, para la predicción de cada una de las bioactividades: "),
              tableOutput("model_info")
              ),
-    tabPanel("Documentos", 
+    tabPanel("Documentos",
              tags$h3("A continuación se presentan enlaces a documentos de posible interes:"),
              tags$div(
                HTML(# <a href="" target="_blank" rel="noopener noreferrer">Articulo cientifico sin publicar (opcional)</a>
@@ -237,7 +252,6 @@ server <- function(input, output, session) {
     updateTabsetPanel(session, "tabset", selected = "prediction_table")
   })
   
-
   clean_input <- eventReactive(input$prediction_button, {
     req(input$user_smiles)
     input_smiles <- gsub(" ", "", input$user_smiles)
